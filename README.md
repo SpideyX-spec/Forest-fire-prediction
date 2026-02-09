@@ -2,6 +2,19 @@
 
 Project Overview This is a full-stack Machine Learning web application designed to predict the risk of forest fires in Algeria based on meteorological data. The system utilizes two separate ML models to provide comprehensive risk analysis: a Classification model to predict if a fire will occur (Safe vs. Danger) and a Regression model to predict the intensity of the fire (Fire Weather Index).
 
+<img width="959" height="420" alt="image" src="https://github.com/user-attachments/assets/1c896af6-fc4d-4a2c-8d9b-9298c20c6dd0" />
+
+
+
+https://github.com/user-attachments/assets/2460b958-b286-47cb-a0b1-8751c2f34306
+
+
+
+https://github.com/user-attachments/assets/0fe93c68-baf1-48e9-9ba6-4f3799b9dd9c
+
+
+
+
 ## Key Features
 
 Dual Prediction System:
