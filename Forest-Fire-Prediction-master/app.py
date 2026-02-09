@@ -1,94 +1,128 @@
-import pickle, bz2
+import pickle
+import bz2
+import os
+import logging
 from flask import Flask, request, render_template
 import numpy as np
-import pandas as pd
-from app_logger import log
-import warnings
-warnings.filterwarnings("ignore")
 
+# --- 1. SETUP LOGGING ---
+# We use standard logging to avoid errors if app_logger.py is broken
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Import Classification and Regression model file
-C_pickle = bz2.BZ2File('Classification.pkl', 'rb')
-R_pickle = bz2.BZ2File('Regression.pkl', 'rb')
-model_C = pickle.load(C_pickle)
-model_R = pickle.load(R_pickle)
+# --- 2. ROBUST MODEL LOADER ---
+def load_model(filename):
+    """
+    Tries to load a model whether it is BZ2 compressed or just a standard Pickle.
+    """
+    # Check if file exists first
+    if not os.path.exists(filename):
+        logger.error(f"CRITICAL ERROR: File {filename} not found!")
+        return None
+
+    try:
+        # Try loading as BZ2 (Compressed)
+        with bz2.BZ2File(filename, 'rb') as f:
+            return pickle.load(f)
+    except OSError:
+        try:
+            # If BZ2 fails, try loading as standard Pickle
+            with open(filename, 'rb') as f:
+                return pickle.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load {filename} as standard pickle: {e}")
+            return None
+    except Exception as e:
+        logger.error(f"Unexpected error loading {filename}: {e}")
+        return None
+
+# --- 3. LOAD THE MODELS ---
+# Make sure these filenames match EXACTLY what is on GitHub (Case Sensitive!)
+model_C = load_model('Classification.pkl')
+model_R = load_model('Regression.pkl')
+
+if model_C and model_R:
+    logger.info("SUCCESS: Both models loaded correctly.")
+else:
+    logger.warning("WARNING: One or both models failed to load. Predictions will crash.")
 
 
+# --- 4. ROUTES ---
 
-# Route for homepage
 @app.route('/')
 def home():
-    log.info('Home page loaded successfully')
+    logger.info('Home page loaded successfully')
     return render_template('index.html')
 
-
-
-# Route for Classification Model
-
-@app.route('/predictC', methods=['POST', 'GET'])
+@app.route('/predictC', methods=['POST'])
 def predictC():
-    if request.method == 'POST':
-        try:
-            #  reading the inputs given by the user
-            Temperature=float(request.form['Temperature'])
-            Wind_Speed =int(request.form['Ws'])
-            FFMC=float(request.form['FFMC'])
-            DMC=float(request.form['DMC'])
-            ISI=float(request.form['ISI'])
+    if model_C is None:
+        return render_template('index.html', prediction_text1="Error: Model not loaded")
 
-            features = [Temperature, Wind_Speed,FFMC, DMC, ISI]
+    try:
+        # Get data from form
+        Temperature = float(request.form['Temperature'])
+        Wind_Speed = float(request.form['Ws'])
+        FFMC = float(request.form['FFMC'])
+        DMC = float(request.form['DMC'])
+        ISI = float(request.form['ISI'])
 
-            Float_features = [float(x) for x in features]
-            final_features = [np.array(Float_features)]
-            prediction = model_C.predict(final_features)[0]
+        features = [Temperature, Wind_Speed, FFMC, DMC, ISI]
+        final_features = [np.array(features)]
+        
+        prediction = model_C.predict(final_features)[0]
+        logger.info(f'Classification Prediction: {prediction}')
 
-            log.info('Prediction done for Classification model')
+        if int(prediction) == 0:
+            text = 'Forest is Safe!'
+        else:
+            text = 'Forest is in Danger!'
 
-            if prediction == 0:
-                text = 'Forest is Safe!'
-            else:
-                text = 'Forest is in Danger!'
-            return render_template('index.html', prediction_text1="{} --- Chance of Fire is {}".format(text, prediction))
-        except Exception as e:
-            log.error('Input error, check input', e)
-        return render_template('index.html', prediction_text1="Check the Input again!!!")
+        return render_template('index.html', prediction_text1="{} --- Chance of Fire is {}".format(text, prediction))
 
-
-# Route for Regression Model
+    except Exception as e:
+        logger.error(f"Error in Classification: {e}")
+        return render_template('index.html', prediction_text1=f"Error: {e}")
 
 
 @app.route('/predictR', methods=['POST'])
 def predictR():
-    if request.method == 'POST':
-        try:
-            #  reading the inputs given by the user
-            Temperature=float(request.form['Temperature'])
-            Wind_Speed =int(request.form['Ws'])
-            FFMC=float(request.form['FFMC'])
-            DMC=float(request.form['DMC'])
-            ISI=float(request.form['ISI'])
+    if model_R is None:
+        return render_template('index.html', prediction_text2="Error: Model not loaded")
 
-            features = [Temperature, Wind_Speed,FFMC, DMC, ISI]
+    try:
+        # Get data from form
+        # CRITICAL: Ensure your HTML input names match these keys exactly!
+        Temperature = float(request.form['Temperature'])
+        
+        # Note: Your HTML might use 'Wind_speed', check index.html name attribute!
+        # If your HTML says name="Wind_speed", change 'Ws' below to 'Wind_speed'
+        Wind_Speed = float(request.form.get('Ws', request.form.get('Wind_speed'))) 
+        
+        FFMC = float(request.form['FFMC'])
+        
+        # Handling potential naming mismatch for DMC/ISI based on your previous HTML
+        DMC = float(request.form.get('DMC', request.form.get('DMC1')))
+        ISI = float(request.form.get('ISI', request.form.get('ISI1')))
 
-            Float_features = [float(x) for x in features]
-            final_features = [np.array(Float_features)]
-            prediction = model_R.predict(final_features)[0]
+        features = [Temperature, Wind_Speed, FFMC, DMC, ISI]
+        final_features = [np.array(features)]
+        
+        prediction = model_R.predict(final_features)[0]
+        logger.info(f'Regression Prediction: {prediction}')
 
-            log.info('Prediction done for Regression model')
-
-            if prediction > 15:
-                return render_template('index.html', prediction_text2="Fuel Moisture Code index is {:.4f} ---- Warning!!! High hazard rating".format(prediction))
-            else:
-                return render_template('index.html', prediction_text2="Fuel Moisture Code index is {:.4f} ---- Safe.. Low hazard rating".format(prediction))
-        except Exception as e:
-            log.error('Input error, check input', e)
-        return render_template('index.html', prediction_text2="Check the Input again!!!")
+        if prediction > 15:
+            res_text = "Fuel Moisture Code index is {:.4f} ---- Warning!!! High hazard rating".format(prediction)
+        else:
+            res_text = "Fuel Moisture Code index is {:.4f} ---- Safe.. Low hazard rating".format(prediction)
             
+        return render_template('index.html', prediction_text2=res_text)
 
-
-# Run APP in Debug mode
+    except Exception as e:
+        logger.error(f"Error in Regression: {e}")
+        return render_template('index.html', prediction_text2=f"Error: {e}")
 
 if __name__ == "__main__":
-    app.run(debug=True, port= 5000)
+    app.run(debug=True)
