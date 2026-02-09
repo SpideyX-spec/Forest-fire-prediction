@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Forest Fire Prediction</title>
+
+    <link rel="stylesheet" href="{{ url_for('static',filename='fonts/material-icon/css/material-design-iconic-font.min.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='vendor/jquery-ui/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css')}}">
+</head>
+<body>
+
+    <div class="main">
+
+        <div class="header">
+            <img src="{{ url_for('static', filename = 'images/header-text.png')}}" alt="Header Text">
+            <h1>ALGERIAN FOREST FIRE PREDICTION</h1>
+            <img src="{{ url_for('static', filename = 'images/dots.png')}}" alt="Dots">
+        </div>
+
+        <div class="team-info" style="text-align: center; margin-bottom: 20px;">
+            <h2>Project by Sulagna, Mitra, Arnab, Adarsha</h2>
+            <div class="contact-details" style="margin-top: 10px;">
+                <a href="https://github.com/SpideyX-spec" target="_blank" rel="noopener noreferrer">
+                    <img src="{{ url_for('static',filename='images/Github.png') }}" alt="Github" style="width: 30px; margin: 0 10px;" />
+                </a>
+                <a href="https://www.linkedin.com/in/sulagna-dutta-ab5257358/" target="_blank" rel="noopener noreferrer">
+                    <img src="{{ url_for('static',filename='images/linkedin.png') }}" alt="LinkedIn" style="width: 30px; margin: 0 10px;" />
+                </a>
+            </div>
+        </div>
+
+        <div class="container">
+            <h3>Fire Prediction (Classification Model)</h3>
+            <form action="{{ url_for('predict')}}" id="booking-form" class="booking-form" method="POST">
+                <div class="form-group">
+                    <div class="form-Temperature">
+                        <label for="Temperature">Temperature</label>
+                        <input type="number" id="Temperature" name="Temperature" placeholder="Temperature" required />
+                    </div>
+                    <div class="form-Ws">
+                        <label for="Ws">WindSpeed</label>
+                        <input type="number" id="Ws" name="Ws" placeholder="Wind speed" required />
+                    </div>
+                    <div class="form-FFMC">
+                        <label for="FFMC">Fuel Moisture Code</label>
+                        <input type="number" id="FFMC" name="FFMC" placeholder="FFMC" required />
+                    </div>
+                    <div class="form-DMC">
+                        <label for="DMC">Duff Moisture Code</label>
+                        <input type="number" id="DMC" name="DMC" placeholder="DMC" required />
+                    </div>
+                    <div class="form-ISI">
+                        <label for="ISI">Initial Spread Index</label>
+                        <input type="number" id="ISI" name="ISI" placeholder="ISI" required />
+                    </div>
+                    <div class="form-submit">
+                        <input type="submit" id="submit" class="submit" value="Predict Fire" />
+                    </div>
+                </div>
+                <h4 style="text-align: center; color: white; margin-top: 10px;">{{prediction_text1}}</h4>
+            </form>
+        </div>
+
+        <br>
+
+        <div class="container">
+            <h3>Fire Weather Index Prediction (Regression Model)</h3>
+            <form action="{{ url_for('predictR')}}" id="Reg_form" class="booking-form" method="POST">
+                <div class="form-group">
+                    <div>
+                        <label for="Temperature1">Temperature</label>
+                        <input type="text" id="Temperature1" name="Temperature" placeholder="Temperature" required />
+                    </div>
+                    <div>
+                        <label for="Wind_speed">Windspeed</label>
+                        <input type="text" id="Wind_speed" name="Wind_speed" placeholder="Wind speed" required />
+                    </div>
+                    <div>
+                        <label for="FFMC1">Fuel Moisture Code</label>
+                        <input type="text" id="FFMC1" name="FFMC" placeholder="FFMC" required />
+                    </div>
+                    <div>
+                        <label for="DMC1">Duff Moisture Code</label>
+                        <input type="text" id="DMC1" name="DMC1" placeholder="DMC" required />
+                    </div>
+                    <div>
+                        <label for="ISI1">Initial Spread Index</label>
+                        <input type="text" id="ISI1" name="ISI1" placeholder="ISI" required />
+                    </div>
+                    <div class="form-submit">
+                        <input type="submit" id="submitR" class="submit" value="Predict FWI" />
+                    </div>
+                </div>
+                <h4 style="text-align: center; color: white; margin-top: 10px;">{{prediction_text2}}</h4>
+            </form>
+        </div>
+
+        <div class="technologies" style="text-align: center; margin-top: 50px; background-color: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px;">
+            <h3 style="color: #333;">Technologies Used</h3>
+            <img src="{{ url_for('static', filename='images/tech.png') }}" alt="Technologies Used" style="max-width: 80%; height: auto;">
+        </div>
+
+        <br><br>
+
+    </div>
+</body>
+</html>
