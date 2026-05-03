@@ -50,3 +50,7 @@ The Flask backend preprocesses the input using a Standard Scaler.
 The pre-trained Machine Learning models (.pkl files) process the data.
 
 The application returns a real-time prediction to the user interface indicating whether the forest is safe or at risk.
+Project ppt & report - [Algerian_Forest_Fire_Prediction final 2.0.pptx](https://github.com/user-attachments/files/27313757/Algerian_Forest_Fire_Prediction.final.2.0.pptx)
+[Mini_Project_Report.pdf](https://github.com/user-attachments/files/27313755/Mini_Project_Report.pdf)
+ 
+
